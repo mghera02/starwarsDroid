@@ -3,8 +3,8 @@
 #include <Servo.h>
 #include "IRremote.h"
 
-int pos = 0;    // variable to store the servo position
-int receiver = A2; // Signal Pin of IR receiver
+int pos = 60;    // variable to store the servo position
+int receiver = A5; // Signal Pin of IR receiver
 
 /*-----( Declare objects )-----*/
 IRrecv irrecv(receiver);     // create instance of 'irrecv'
@@ -18,6 +18,7 @@ int wheel2Speed=100;
 void setup() {
   Serial.begin(9600);
   headMotor.attach(9);  // attaches the servo on pin 9 to the servo object
+  
  
   //ir receiver
   Serial.println("IR Receiver Button Decode"); 
@@ -41,12 +42,17 @@ void loop() {
 
 /*-----( Function )-----*/
 void head(){
-  for (pos = 0; pos <= 180; pos += 2) { // goes from 0 degrees to 180 degrees
+  for (pos = 60; pos <= 120; pos += 2) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
     headMotor.write(pos);              // tell servo to go to position in variable 'pos'
     delay(15);                       // waits 15ms for the servo to reach the position
   }
-  for (pos = 180; pos >= 0; pos -= 2) { // goes from 180 degrees to 0 degrees
+  for (pos = 120; pos >= 0; pos -= 2) { // goes from 180 degrees to 0 degrees
+    headMotor.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+  for (pos = 0; pos <= 60; pos += 2) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
     headMotor.write(pos);              // tell servo to go to position in variable 'pos'
     delay(15);                       // waits 15ms for the servo to reach the position
   }

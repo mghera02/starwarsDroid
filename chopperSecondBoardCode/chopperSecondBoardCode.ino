@@ -1,7 +1,8 @@
-//LIBRARIES
-//for audio
+////////////LIBRARIES////////////
+
+//for sd card reader
 #include "SD.h"
-#define SD_ChipSelectPin 3
+//for audio
 #include "TMRpcm.h"
 #include "SPI.h"
 //ir
@@ -9,13 +10,14 @@
 //for temp and humidity
 #include <dht.h>
 
-//VARIABLES
+////////////VARIABLES////////////
 //for rgb led
 #define BLUE 9 
 #define GREEN 5
 #define RED 6
 #define delayTime 10 // fading time between colors
-
+//for sd card reader
+#define SD_ChipSelectPin 3
 //for temp and humidity
 #define DHT_SENSOR_TYPE DHT_TYPE_11
 #define DHT11_PIN A1
@@ -25,20 +27,20 @@ int latchPin = A3;      // (11) ST_CP [RCK] on 74HC595
 int clockPin = A4;      // (9) SH_CP [SCK] on 74HC595
 int dataPin = A2;     // (12) DS [S1] on 74HC595
 byte leds = 0;
-
 //for keeping track of time for events
 long lastMillis;
 int rot=1;
-
-// 0 is no sound, 1 is only chopper sound, 2 is everything 
+//0 is no sound, 1 is only chopper sound, 2 is everything 
 int speakerMode=0;
-
-int receiver = A0; // Signal Pin of IR receiver
-
+//Signal Pin of IR receiver
+int receiver = 2;
 //rgb led current colors
 String choice="purpleRed";
+//for dht
+float temperature;
+float humidity;
 
-/*-----( Declare objects )-----*/
+////////////DECLARE OBJECTS////////////
 IRrecv irrecv(receiver);     // create instance of 'irrecv'
 decode_results results;      // create instance of 'decode_results'
 TMRpcm tmrpcm;               // create instance for music player
@@ -55,24 +57,27 @@ void setup()
   pinMode(latchPin, OUTPUT);
   pinMode(dataPin, OUTPUT);  
   pinMode(clockPin, OUTPUT);
-  
   tmrpcm.speakerPin=10;
+  
   Serial.begin(9600);
+  
   irrecv.enableIRIn();
+  
   if(!SD.begin(SD_ChipSelectPin))
   {
     Serial.println("SD fail");
     return;
   }
+
+  //8 CHARACTER LIMIT FOR THE AUDIO FILE NAMES
   tmrpcm.setVolume(5);
-  //8 CHARACTER LIMIT FOR THE FILE NAMES
-  //tmrpcm.play("alert.wav");
   startUpEvent();
 }
 
 void loop() {
   //gets rid of high pitched sound from speaker when not playing
   digitalWrite(10, LOW);
+  
   //for IR receiver
   if (irrecv.decode(&results)) // have we received an IR signal?
   {
@@ -137,19 +142,15 @@ void loop() {
     rot=1;
    }
   }
-  
-
-  float temperature;
-  float humidity;
 
   /* Measure temperature and humidity.  If the functions returns
      true, then a measurement is available. */
   int chk = DHT.read11(DHT11_PIN);
-  Serial.print("Temperature = ");
-  Serial.println(DHT.temperature*9/5+32);
-  Serial.print("Humidity = ");
-  Serial.println(DHT.humidity);
-  delay(1000);
+  //Serial.print("Temperature = ");
+  //Serial.println(DHT.temperature*9/5+32);
+  //Serial.print("Humidity = ");
+  //Serial.println(DHT.humidity);
+  delay(500);
   if(DHT.temperature*9/5+32<70){
     choice="greenBlue";
   }else if(DHT.temperature*9/5+32<75){
@@ -163,7 +164,7 @@ void loop() {
 
 
 
-// FUNCTIONS
+////////////FUNCTIONS////////////
 
 //EVENTS START
 void startUpEvent(){
@@ -426,7 +427,7 @@ void updateShiftRegister()
 }
 
 void fadeOut(String c){
-  #define delayTime 10 // fading time between colors
+  #define delayTime 7.5 // fading time between colors
   if(c=="redGreen"){
     analogWrite(RED, 0);
     analogWrite(GREEN, 0);
@@ -482,7 +483,7 @@ void fadeOut(String c){
     }
   }
   else if(c=="purpleRed"){
-    Serial.print("here");
+    //Serial.print("here");
     analogWrite(RED, 0);
     analogWrite(GREEN, 0);
     analogWrite(BLUE, 0);
@@ -504,13 +505,8 @@ void fadeOut(String c){
   }
 }
 
-
-
-/*-----( Function )-----*/
 void translateIR() // takes action based on IR code received
-
 // describing Remote IR codes 
-
 {
 
   switch(results.value)
@@ -518,7 +514,37 @@ void translateIR() // takes action based on IR code received
   {
   case 0xFFA25D: Serial.println("POWER"); break;
   case 0xFFE21D: Serial.println("FUNC/STOP"); break;
-  case 0xFF629D: Serial.println("VOL+"); break;
+  case 0xFF629D:
+    Serial.println("VOL+");
+    //increments speaker mode
+    int currMode;
+    if(speakerMode<2){
+      speakerMode++;
+    }else{
+      speakerMode=0;
+    }
+    // displays speaker mode on shift register leds
+    switch(speakerMode) {
+      case 0 :
+        currMode=7;
+        break;
+      case 1 :
+        currMode=4;
+        break;
+      case 2 :
+        currMode=2;
+        break;
+      default:
+        break;
+    }
+    leds = 0;
+    updateShiftRegister();
+    bitSet(leds, currMode);
+    updateShiftRegister();
+    delay(1500);
+    leds = 0;
+    updateShiftRegister();
+    break;
   case 0xFF22DD: Serial.println("FAST BACK");    break;
   case 0xFF02FD: Serial.println("PAUSE");    break;
   case 0xFFC23D: Serial.println("FAST FORWARD");   break;
@@ -528,7 +554,7 @@ void translateIR() // takes action based on IR code received
   case 0xFF9867: Serial.println("EQ");    break;
   case 0xFFB04F:
     Serial.println("ST/REPT");
-    tmrpcm.play("disco.wav");
+    alertEvent();
     break;
   case 0xFF6897:
     Serial.println("0");
@@ -580,5 +606,4 @@ void translateIR() // takes action based on IR code received
 
   delay(500); // Do not get immediate repeat
 
-
-} //END translateIR
+}
