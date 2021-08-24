@@ -5,6 +5,10 @@
 
 int pos = 60;    // variable to store the servo position
 int receiver = A5; // Signal Pin of IR receiver
+const int trigPin = A1; // variable for ultrasonic sensor
+const int echoPin = A0; // variable for ultrasonic sensor
+
+unsigned long timeNow=0;
 
 /*-----( Declare objects )-----*/
 IRrecv irrecv(receiver);     // create instance of 'irrecv'
@@ -12,12 +16,21 @@ decode_results results;      // create instance of 'decode_results'
 Servo headMotor;  // create servo object to control a servo
 Servo wheel1;
 Servo wheel2;
+Servo armMotor;
 int wheel1Speed=100;
 int wheel2Speed=100;
+long duration;
+int distance;
+bool autMode=false;
+bool moving=false;
+int backUpNum=0;
 
 void setup() {
   Serial.begin(9600);
   headMotor.attach(9);  // attaches the servo on pin 9 to the servo object
+  armMotor.attach(3);
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   
  
   //ir receiver
@@ -25,7 +38,60 @@ void setup() {
   irrecv.enableIRIn();
 }
 
-void loop() {
+void loop() {   
+  // Clears the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  distance= duration*0.034/2;
+  // Prints the distance on the Serial Monitor
+  Serial.print("Distance: ");
+  Serial.println(distance);
+  delay(100);
+
+ if(distance>40 && distance<2000 && autMode){
+    //go forward
+    wheel1.attach(11);
+    wheel1Speed=125;
+    wheel2.attach(10);
+    wheel2Speed=50;
+  }else if(!(distance>40 && distance<2000) && autMode){
+    wheel2.detach();
+    wheel2Speed=90;
+    wheel1.detach();
+    wheel1Speed=90;
+    if(backUpNum==0){
+      wheel1.attach(11);
+      wheel1Speed=50;
+      wheel2.attach(10);
+      wheel2Speed=125;
+      backUpNum++;
+    }else{
+      wheel2.detach();
+      wheel2Speed=90;
+      wheel1.detach();
+      wheel1Speed=90;
+      wheel1.attach(11);
+      wheel1Speed=125;
+      backUpNum++;
+      if(backUpNum>5){
+        backUpNum=0;
+      }
+    }
+  }else if((!autMode || distance>2000) && !moving){
+    //stop
+    wheel2.detach();
+    wheel2Speed=90;
+    wheel1.detach();
+    wheel1Speed=90;
+  }
+  
   //for IR receiver
   if (irrecv.decode(&results)) // have we received an IR signal?
 
@@ -58,6 +124,23 @@ void head(){
   }
 }
 
+void arm(){
+  for (pos = 60; pos <= 120; pos += 2) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    armMotor.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+  for (pos = 120; pos >= 0; pos -= 2) { // goes from 180 degrees to 0 degrees
+    armMotor.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+  for (pos = 0; pos <= 60; pos += 2) { // goes from 0 degrees to 180 degrees
+    // in steps of 1 degree
+    armMotor.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(15);                       // waits 15ms for the servo to reach the position
+  }
+}
+
 
 void translateIR() // takes action based on IR code received
 
@@ -77,50 +160,82 @@ void translateIR() // takes action based on IR code received
   case 0xFFE01F: Serial.println("DOWN");    break;
   case 0xFFA857: Serial.println("VOL-");    break;
   case 0xFF906F: Serial.println("UP");    break;
-  case 0xFF9867: Serial.println("EQ");    break;
+  case 0xFF9867:
+    Serial.println("EQ");
+    arm();
+    break;
   case 0xFFB04F: Serial.println("ST/REPT");    break;
   case 0xFF6897:
+    //Move head around 120 deg and end in center
     Serial.println("0");
     head();
     break;
   case 0xFF30CF:
+    //Forward Left
     Serial.println("1");
     wheel1.attach(11);
-    wheel1Speed=50;
+    wheel1Speed=125;
+    moving=true;
     break;
   case 0xFF18E7:
+    //Forward All
     Serial.println("2");
-    wheel1.detach();
-    wheel1Speed=90;
-    break;
-  case 0xFF7A85: 
-    Serial.println("3");
     wheel1.attach(11);
     wheel1Speed=125;
-    break;
-  case 0xFF10EF: 
-    Serial.println("4");
     wheel2.attach(10);
     wheel2Speed=50;
+    moving=true;
+    break;
+  case 0xFF7A85: 
+    //Forward Right 
+    Serial.println("3");
+    wheel2.attach(10);
+    wheel2Speed=50;
+    moving=true;
+    break;
+  case 0xFF10EF: 
+    //toggle autMode
+    Serial.println("4");
+    if(autMode){
+      autMode=false;
+    }else{
+      autMode=true;
+    }
     break;
   case 0xFF38C7: 
+    //Stop all
     Serial.println("5");
     wheel2.detach();
     wheel2Speed=90;
+    wheel1.detach();
+    wheel1Speed=90;
+    moving=false;
     break;
   case 0xFF5AA5: 
-    Serial.println("6");
-    wheel2.attach(10);
-    wheel2Speed=125;
+    
     break;
   case 0xFF42BD: 
+    //Backwards Left
     Serial.println("7");
+    wheel1.attach(11);
+    wheel1Speed=50;
+    moving=true;
     break;
   case 0xFF4AB5:
+    //Backwards All
     Serial.println("8");
+    wheel1.attach(11);
+    wheel1Speed=50;
+    wheel2.attach(10);
+    wheel2Speed=125;
+    moving=true;
     break;
   case 0xFF52AD:
+    //Backwards Right
     Serial.println("9");
+    wheel2.attach(10);
+    wheel2Speed=125;
+    moving=true;
     break;
   case 0xFFFFFFFF: Serial.println(" REPEAT");break;  
 

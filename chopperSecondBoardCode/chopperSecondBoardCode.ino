@@ -582,7 +582,7 @@ void translateIR() // takes action based on IR code received
     break;
   case 0xFF5AA5: 
     Serial.println("6");
-    
+    discoEvent();
     break;
   case 0xFF42BD: 
     Serial.println("7");
