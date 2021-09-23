@@ -29,6 +29,8 @@ void setup() {
   Serial.begin(9600);
   headMotor.attach(9);  // attaches the servo on pin 9 to the servo object
   armMotor.attach(3);
+  armMotor.write(180);
+  armMotor.detach();
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   
@@ -125,20 +127,18 @@ void head(){
 }
 
 void arm(){
-  for (pos = 60; pos <= 120; pos += 2) { // goes from 0 degrees to 180 degrees
+  armMotor.attach(3);
+  for (pos = 180; pos >= 100; pos -= 2) { // goes from 180 degrees to 0 degrees
+    armMotor.write(pos);              // tell servo to go to position in variable 'pos'
+    delay(25);                       // waits 15ms for the servo to reach the position
+  }
+  delay(2000);
+  for (pos = 130; pos <= 100; pos += 2) { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
     armMotor.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
+    delay(25);                       // waits 15ms for the servo to reach the position
   }
-  for (pos = 120; pos >= 0; pos -= 2) { // goes from 180 degrees to 0 degrees
-    armMotor.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
-  }
-  for (pos = 0; pos <= 60; pos += 2) { // goes from 0 degrees to 180 degrees
-    // in steps of 1 degree
-    armMotor.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
-  }
+  armMotor.detach();
 }
 
 

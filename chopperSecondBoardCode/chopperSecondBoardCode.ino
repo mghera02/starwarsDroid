@@ -167,6 +167,11 @@ void loop() {
 ////////////FUNCTIONS////////////
 
 //EVENTS START
+// Each event plays randomly and plays a sound and changes the shift register leds
+// 0,1 is blue
+// 2,3 is green
+// 4,5 is yellow
+// 6,7 is red
 void startUpEvent(){
   tmrpcm.setVolume(5);
   //8 CHARACTER LIMIT FOR THE FILE NAMES
@@ -426,9 +431,31 @@ void updateShiftRegister()
    digitalWrite(latchPin, HIGH);
 }
 
-void fadeOut(String c){
+// For constantly changing the shift register and RGB LED random colors based on the temp
+void fadeOut(String c)
+{
+  int randNumber;
+  randNumber = random(4);
+  Serial.print(randNumber);
+  leds = 0;
+  updateShiftRegister();
   #define delayTime 7.5 // fading time between colors
-  if(c=="redGreen"){
+  if(c == "redGreen"){
+    switch(randNumber){
+        case 0:
+          bitSet(leds, 2);
+          break;
+        case 1:
+          bitSet(leds, 3);
+          break;
+        case 2:
+          bitSet(leds, 6);
+          break;
+        case 3:
+          bitSet(leds, 7);
+          break;
+    }
+    updateShiftRegister();
     analogWrite(RED, 0);
     analogWrite(GREEN, 0);
     analogWrite(BLUE, 0);
@@ -447,6 +474,21 @@ void fadeOut(String c){
     }
   }
   else if(c=="greenBlue"){
+    switch(randNumber){
+        case 0:
+          bitSet(leds, 0);
+          break;
+        case 1:
+          bitSet(leds, 1);
+          break;
+        case 2:
+          bitSet(leds, 2);
+          break;
+        case 3:
+          bitSet(leds, 3);
+          break;
+      }
+      updateShiftRegister();
     analogWrite(RED, 0);
     analogWrite(GREEN, 0);
     analogWrite(BLUE, 0);
@@ -465,6 +507,21 @@ void fadeOut(String c){
     }
   }  
   else if(c=="blueRed"){
+    switch(randNumber){
+        case 0:
+          bitSet(leds, 0);
+          break;
+        case 1:
+          bitSet(leds, 1);
+          break;
+        case 2:
+          bitSet(leds, 6);
+          break;
+        case 3:
+          bitSet(leds, 7);
+          break;
+      }
+      updateShiftRegister();
     analogWrite(RED, 0);
     analogWrite(GREEN, 0);
     analogWrite(BLUE, 0);
@@ -483,6 +540,21 @@ void fadeOut(String c){
     }
   }
   else if(c=="purpleRed"){
+    switch(randNumber){
+        case 0:
+          bitSet(leds, 0);
+          break;
+        case 1:
+          bitSet(leds, 1);
+          break;
+        case 2:
+          bitSet(leds, 6);
+          break;
+        case 3:
+          bitSet(leds, 7);
+          break;
+      }
+      updateShiftRegister();
     //Serial.print("here");
     analogWrite(RED, 0);
     analogWrite(GREEN, 0);
