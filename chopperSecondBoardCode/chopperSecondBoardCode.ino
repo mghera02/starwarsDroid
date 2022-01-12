@@ -619,7 +619,10 @@ void translateIR() // takes action based on IR code received
     break;
   case 0xFF22DD: Serial.println("FAST BACK");    break;
   case 0xFF02FD: Serial.println("PAUSE");    break;
-  case 0xFFC23D: Serial.println("FAST FORWARD");   break;
+  case 0xFFC23D:
+    Serial.println("FAST FORWARD");
+    discoEvent();
+    break;
   case 0xFFE01F: Serial.println("DOWN");    break;
   case 0xFFA857: Serial.println("VOL-");    break;
   case 0xFF906F: Serial.println("UP");    break;
@@ -654,7 +657,7 @@ void translateIR() // takes action based on IR code received
     break;
   case 0xFF5AA5: 
     Serial.println("6");
-    discoEvent();
+
     break;
   case 0xFF42BD: 
     Serial.println("7");
