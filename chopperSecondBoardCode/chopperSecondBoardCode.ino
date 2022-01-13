@@ -29,13 +29,13 @@ int dataPin = A2;     // (12) DS [S1] on 74HC595
 byte leds = 0;
 //for keeping track of time for events
 long lastMillis;
-int rot=1;
+int rot = 1;
 //0 is no sound, 1 is only chopper sound, 2 is everything 
-int speakerMode=0;
+int speakerMode = 0;
 //Signal Pin of IR receiver
 int receiver = 2;
 //rgb led current colors
-String choice="purpleRed";
+String choice = "purpleRed";
 //for dht
 float temperature;
 float humidity;
@@ -57,7 +57,7 @@ void setup()
   pinMode(latchPin, OUTPUT);
   pinMode(dataPin, OUTPUT);  
   pinMode(clockPin, OUTPUT);
-  tmrpcm.speakerPin=10;
+  tmrpcm.speakerPin = 10;
   
   Serial.begin(9600);
   
@@ -89,57 +89,57 @@ void loop() {
   fadeOut(choice);
 
   //for calling events every 2 mins
-  if (millis() - lastMillis >= 2*60*1000UL) 
+  if (millis() - lastMillis >= 2 * 60 * 1000UL) 
   {
    digitalWrite(10, HIGH);
    lastMillis = millis();  //get ready for the next iteration
    switch(rot) {
       case 1 :
-        if(speakerMode>1){
+        if(speakerMode > 1){
           discoEvent(); 
         }
         break;
       case 2 :
-        if(speakerMode>0){
+        if(speakerMode > 0){
           regEvent();
         }
         break;
       case 3 :
-        if(speakerMode>0){
+        if(speakerMode > 0){
           reg2Event();
         }
         break;
       case 4 :
-        if(speakerMode>0){
+        if(speakerMode > 0){
          reg3Event();
         }
         break;
       case 5 :
-        if(speakerMode>0){
+        if(speakerMode > 0){
           reg4Event();
         }
         break;
      case 6 :
-        if(speakerMode>1){
+        if(speakerMode > 1){
          kananEvent();
         }
         break;
      case 7 :
-        if(speakerMode>1){
+        if(speakerMode > 1){
           alertEvent();
         }
         break;
      case 8 :
-        if(speakerMode>0){
+        if(speakerMode > 0){
           woohooEvent();
         }
         break;
    }
    
-   if(rot<8){
+   if(rot < 8){
     rot++;
    }else{
-    rot=1;
+    rot = 1;
    }
   }
 
@@ -151,13 +151,13 @@ void loop() {
   //Serial.print("Humidity = ");
   //Serial.println(DHT.humidity);
   delay(500);
-  if(DHT.temperature*9/5+32<70){
-    choice="greenBlue";
-  }else if(DHT.temperature*9/5+32<75){
+  if(DHT.temperature * 9 / 5 + 32 < 70){
+    choice = "greenBlue";
+  }else if(DHT.temperature * 9 / 5 + 32 < 75){
     choice="blueRed";
-  }else if(DHT.temperature*9/5+32<80){
+  }else if(DHT.temperature * 9 / 5+32<80){
     choice="redGreen";
-  }else if(DHT.temperature*9/5+32<90){
+  }else if(DHT.temperature * 9 / 5 + 32 < 90){
     choice="purpleRed";
   }
 }
@@ -179,7 +179,7 @@ void startUpEvent(){
   //for 8 leds
   leds = 0;
   updateShiftRegister();
-  int tDelay=100;
+  int tDelay = 100;
   delay(tDelay);
   for (int i = 8; i > -1; i--)
   {
@@ -206,7 +206,7 @@ void woohooEvent(){
   //for 8 leds
   leds = 0;
   updateShiftRegister();
-  int tDelay=70;
+  int tDelay = 70;
   delay(tDelay);
   for (int i = 8; i > 3; i--)
   {
@@ -234,10 +234,10 @@ void regEvent(){
   //for 8 leds
   leds = 0;
   updateShiftRegister();
-  int tDelay=150;
+  int tDelay = 150;
   delay(tDelay);
   for(int i = 0; i < 8; i++){
-    if(i%2!=0){
+    if(i % 2 != 0){
       bitSet(leds, i);
       updateShiftRegister();
       delay(tDelay); 
@@ -246,7 +246,7 @@ void regEvent(){
   leds = 0;
   updateShiftRegister();
   for(int i = 8; i > 0; i--){
-    if(i%2!=0){
+    if(i % 2 != 0){
       bitSet(leds, i);
       updateShiftRegister();
       delay(tDelay); 
@@ -265,10 +265,10 @@ void reg2Event(){
   //for 8 leds
   leds = 0;
   updateShiftRegister();
-  int tDelay=150;
+  int tDelay = 150;
   delay(tDelay);
   for(int i = 0; i < 8; i++){
-    if(i%2==0){
+    if(i % 2 == 0){
       bitSet(leds, i);
       updateShiftRegister();
       delay(tDelay); 
@@ -277,7 +277,7 @@ void reg2Event(){
   leds = 0;
   updateShiftRegister();
   for(int i = 8; i >= 0; i--){
-    if(i%2==0){
+    if(i % 2 == 0){
       bitSet(leds, i);
       updateShiftRegister();
       delay(tDelay); 
@@ -296,10 +296,10 @@ void reg3Event(){
   //for 8 leds
   leds = 0;
   updateShiftRegister();
-  int tDelay=200;
+  int tDelay = 200;
   delay(tDelay);
   for(int i = 0; i < 15; i++){
-    if(i%2==0){
+    if(i % 2 == 0){
       bitSet(leds, 3);
       updateShiftRegister();
       delay(tDelay);  
@@ -323,10 +323,10 @@ void reg4Event(){
   //for 8 leds
   leds = 0;
   updateShiftRegister();
-  int tDelay=200;
+  int tDelay = 200;
   delay(tDelay);
   for(int i = 0; i < 15; i++){
-    if(i%2==0){
+    if(i % 2 == 0){
       bitSet(leds, 1);
       bitSet(leds, 5);
       updateShiftRegister();
@@ -351,7 +351,7 @@ void kananEvent(){
   //for 8 leds
   leds = 0;
   updateShiftRegister();
-  int tDelay=200;
+  int tDelay = 200;
   delay(tDelay);
   bitSet(leds, 0);
   bitSet(leds, 1);
@@ -368,10 +368,10 @@ void alertEvent(){
   //for 8 leds
   leds = 0;
   updateShiftRegister();
-  int tDelay=200;
+  int tDelay = 200;
   delay(tDelay);
   for(int i = 0; i < 90; i++){
-    if(i%2==0){
+    if(i % 2 == 0){
       bitSet(leds, 6);
       updateShiftRegister();
       delay(tDelay);  
@@ -398,12 +398,12 @@ void discoEvent(){
   //for 8 leds
   leds = 0;
   updateShiftRegister();
-  int tDelay=200;
+  int tDelay = 200;
   delay(tDelay);
   int randNumber;
   for(int i = 0; i < 900; i++){
     randNumber = random(8);
-    if(i%2==0){
+    if(i % 2 == 0){
       bitSet(leds, randNumber);
       updateShiftRegister();
       delay(tDelay);  
@@ -462,18 +462,18 @@ void fadeOut(String c)
       // fades out red bring green full when i=255
       for (int i = 0; i < 510; i += 1)
     {
-      if(i<255){
-        analogWrite(RED, 255-i);
+      if(i < 255){
+        analogWrite(RED, 255 - i);
         analogWrite(GREEN, i);
         delay(delayTime);
       }else{
-        analogWrite(RED, i-254);
-        analogWrite(GREEN, 255-i+255);
+        analogWrite(RED, i - 254);
+        analogWrite(GREEN, 255 - i + 255);
         delay(delayTime);
       }
     }
   }
-  else if(c=="greenBlue"){
+  else if(c == "greenBlue"){
     switch(randNumber){
         case 0:
           bitSet(leds, 0);
@@ -495,51 +495,51 @@ void fadeOut(String c)
     // fades out green bring blue full when i=255
     for (int i = 0; i < 510; i += 1)
     {
-      if(i<255){
-        analogWrite(GREEN, 255-i);
+      if(i < 255){
+        analogWrite(GREEN, 255 - i);
         analogWrite(BLUE, i);
         delay(delayTime);
       }else{
-        analogWrite(GREEN, i-254);
-        analogWrite(BLUE, 255-i+255);
+        analogWrite(GREEN, i - 254);
+        analogWrite(BLUE, 255 - i + 255);
         delay(delayTime);
       }
     }
   }  
-  else if(c=="blueRed"){
+  else if(c == "blueRed"){
     switch(randNumber){
-        case 0:
-          bitSet(leds, 0);
-          break;
-        case 1:
-          bitSet(leds, 1);
-          break;
-        case 2:
-          bitSet(leds, 6);
-          break;
-        case 3:
-          bitSet(leds, 7);
-          break;
-      }
-      updateShiftRegister();
+      case 0:
+        bitSet(leds, 0);
+        break;
+      case 1:
+        bitSet(leds, 1);
+        break;
+      case 2:
+        bitSet(leds, 6);
+        break;
+      case 3:
+        bitSet(leds, 7);
+        break;
+    }
+    updateShiftRegister();
     analogWrite(RED, 0);
     analogWrite(GREEN, 0);
     analogWrite(BLUE, 0);
     // fades out blue bring red full when i=255
     for (int i = 0; i < 510; i += 1)
     {
-      if(i<255){
-        analogWrite(BLUE, 255-i);
+      if(i < 255){
+        analogWrite(BLUE, 255 - i);
         analogWrite(RED, i);
         delay(delayTime);
       }else{
-        analogWrite(BLUE, i-254);
-        analogWrite(RED, 255-i+255);
+        analogWrite(BLUE, i - 254);
+        analogWrite(RED, 255 - i + 255);
         delay(delayTime);
       }
     }
   }
-  else if(c=="purpleRed"){
+  else if(c == "purpleRed"){
     switch(randNumber){
         case 0:
           bitSet(leds, 0);
@@ -562,12 +562,12 @@ void fadeOut(String c)
     // fades out red bring purple full when i=255
     for (int i = 0; i < 320; i += 1)
     {
-      if(i<127){
-        analogWrite(RED, 254-i);
+      if(i < 127){
+        analogWrite(RED, 254 - i);
         analogWrite(BLUE, i);
         delay(delayTime);
-      }else if(i<254){
-        analogWrite(BLUE, 254-i);
+      }else if(i < 254){
+        analogWrite(BLUE, 254 - i);
         analogWrite(RED, i);
         delay(delayTime);
       }else{
@@ -580,9 +580,7 @@ void fadeOut(String c)
 void translateIR() // takes action based on IR code received
 // describing Remote IR codes 
 {
-
   switch(results.value)
-
   {
   case 0xFFA25D: Serial.println("POWER"); break;
   case 0xFFE21D: Serial.println("FUNC/STOP"); break;
@@ -590,21 +588,21 @@ void translateIR() // takes action based on IR code received
     Serial.println("VOL+");
     //increments speaker mode
     int currMode;
-    if(speakerMode<2){
+    if(speakerMode < 2){
       speakerMode++;
     }else{
-      speakerMode=0;
+      speakerMode = 0;
     }
     // displays speaker mode on shift register leds
     switch(speakerMode) {
       case 0 :
-        currMode=7;
+        currMode = 7;
         break;
       case 1 :
-        currMode=4;
+        currMode = 4;
         break;
       case 2 :
-        currMode=2;
+        currMode = 2;
         break;
       default:
         break;
@@ -612,6 +610,7 @@ void translateIR() // takes action based on IR code received
     leds = 0;
     updateShiftRegister();
     bitSet(leds, currMode);
+    bitSet(leds, currMode + 1);
     updateShiftRegister();
     delay(1500);
     leds = 0;

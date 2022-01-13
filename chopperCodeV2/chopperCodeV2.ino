@@ -32,6 +32,10 @@ long beginningDance;
 int dancePhase = 1;
 int danceCounter = 0;
 
+// Variables for surveillance mode
+bool surveillanceMode = false;
+bool finishedMovingHead = true;
+
 void setup() {
   Serial.begin(9600);
   headMotor.attach(9);  // attaches the servo on pin 9 to the servo object
@@ -44,8 +48,8 @@ void setup() {
   //ir receiver
   Serial.println("IR Receiver Button Decode"); 
   irrecv.enableIRIn();
-
-  head();
+  
+  head(0);
 }
 
 void loop() {   
@@ -69,10 +73,16 @@ void loop() {
   //Serial.println(distance);
   //delay(100);
 
+  if(surveillanceMode){
+    if(finishedMovingHead){
+      head(1);
+    }
+  }
+
   // Do motion twenty times if button has been pressed to move during disco event
   if(danceToggle && danceCounter < 20){
     if(firstDance){
-      firstDance=false;
+      firstDance = false;
       beginningDance = millis();
       dancePhase = 1;
       danceCounter++;
@@ -90,7 +100,7 @@ void loop() {
     }else if(millis() - beginningDance >= 5000 && millis() - beginningDance <= 7000){
       stopAll();
       if(dancePhase == 3){
-        head();
+        head(0);
         dancePhase = 4;
       }
     }else if(millis() - beginningDance > 7000 && dancePhase == 4){
@@ -121,13 +131,13 @@ void loop() {
         backUpNum = 0;
       }
     }
-  }else if((!autMode || distance>2000) && !moving){
+  }else if((!autMode || distance > 2000) && !moving){
     //stop
     stopAll();
   }
   
   //for IR receiver
-  if (irrecv.decode(&results)) // have we received an IR signal?
+  if(irrecv.decode(&results)) // have we received an IR signal?
   {
     translateIR(); 
     irrecv.resume(); // receive the next value
@@ -138,19 +148,19 @@ void loop() {
 }
 
 /*-----( Function )-----*/
-void head(){
-  for (pos = 60; pos <= 120; pos += 2) { // goes from 60 degrees to 120 degrees
+void head(bool surveillance){
+  for (pos = 60; pos <= 120; pos += 1) { // goes from 60 degrees to 120 degrees
     // in steps of 1 degree
     headMotor.write(pos);            // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
+    delay(15);                       // wait for the servo to reach the position
   }
-  for (pos = 120; pos >= 0; pos -= 2) { // goes from 120 degrees to 0 degrees
+  for (pos = 120; pos >= 0; pos -= 1) { // goes from 120 degrees to 0 degrees
     headMotor.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
+    delay(15);                       // wait for the servo to reach the position
   }
-  for (pos = 0; pos <= 60; pos += 2) { // goes from 0 degrees to 60 degrees
+  for (pos = 0; pos <= 60; pos += 1) { // goes from 0 degrees to 60 degrees
     headMotor.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
+    delay(15);                       // wait for the servo to reach the position
   }
 }
 
@@ -197,7 +207,14 @@ void translateIR() // takes action based on IR code received
 {
   switch(results.value)
   {
-  case 0xFFA25D: Serial.println("POWER"); break;
+  case 0xFFA25D:
+    Serial.println("POWER"); 
+    if(surveillanceMode){
+      surveillanceMode = false;
+    }else{
+      surveillanceMode = true;
+    }
+    break;
   case 0xFFE21D: Serial.println("FUNC/STOP"); break;
   case 0xFF629D: Serial.println("VOL+"); break;
   case 0xFF22DD: Serial.println("FAST BACK");    break;
@@ -221,14 +238,14 @@ void translateIR() // takes action based on IR code received
   case 0xFF6897:
     //Move head around 120 deg and end in center
     Serial.println("0");
-    head();
+    head(0);
     break;
   case 0xFF30CF:
     //Forward Left
     Serial.println("1");
     wheel1.attach(11);
-    wheel1Speed=125;
-    moving=true;
+    wheel1Speed = 125;
+    moving = true;
     break;
   case 0xFF18E7:
     //Forward All
@@ -239,16 +256,16 @@ void translateIR() // takes action based on IR code received
     //Forward Right 
     Serial.println("3");
     wheel2.attach(10);
-    wheel2Speed=50;
-    moving=true;
+    wheel2Speed = 50;
+    moving = true;
     break;
   case 0xFF10EF: 
     //toggle autMode
     Serial.println("4");
     if(autMode){
-      autMode=false;
+      autMode = false;
     }else{
-      autMode=true;
+      autMode = true;
     }
     break;
   case 0xFF38C7: 
@@ -262,8 +279,8 @@ void translateIR() // takes action based on IR code received
     //Backwards Left
     Serial.println("7");
     wheel1.attach(11);
-    wheel1Speed=50;
-    moving=true;
+    wheel1Speed = 50;
+    moving = true;
     break;
   case 0xFF4AB5:
     //Backwards All
@@ -274,8 +291,8 @@ void translateIR() // takes action based on IR code received
     //Backwards Right
     Serial.println("9");
     wheel2.attach(10);
-    wheel2Speed=125;
-    moving=true;
+    wheel2Speed = 125;
+    moving = true;
     break;
   case 0xFFFFFFFF: Serial.println(" REPEAT");break;  
 
